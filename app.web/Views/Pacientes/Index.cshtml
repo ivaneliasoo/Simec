@@ -1,0 +1,229 @@
+﻿@model app.web.Models.PacienteModel
+@{
+    ViewData["Title"] = "Gestionar Pacientes";
+}
+
+<div class="text-center">
+    <div id="app">
+        <h1 class="display-4">{{ title }}</h1>
+
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal" v-on:click="workingPaciente = {}; mode = 'new'">Agregar Paciente</button><br /><br />
+        <table class="table table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th scope="col">
+                        Identificador Paciente
+                    </th>
+                    <th scope="col">
+                        Nombre Completo
+                    </th>
+                    <th scope="col">
+                        Estado
+                    </th>
+                    <th scope="col">
+                        Acciones
+                    </th>
+                </tr>
+            </thead>
+            <tbody class="tbody">
+                <tr v-for="cliente in clientes" :key="cliente.id">
+                    <th scope="row">{{ cliente.id }}</th>
+                    <td scope="row">{{ cliente.nombreCompleto }}</td>
+                    <td scope="row">
+                        <input type="checkbox" disabled v-model="cliente.estado" class="form-check-input" />
+                    </td>
+                    <td>
+                        <button type="button" data-target="#myModal" data-toggle="modal" v-on:click="findPaciente(cliente.id); mode = 'edit'" class="btn btn-warning">Editar</button>
+                        <button type="button" class="btn btn-danger" v-on:click="deletePaciente(cliente.id)">Eliminar</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="myModalLabel">{{ mode }} Paciente</h4>
+                        <button type="button" class="close" data-dismiss="modal">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <div class="form-group">
+                                <input asp-for="Id" placeholder="Identificador Cliente" v-model="workingPaciente.id" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <input asp-for="NombreCompleto" required placeholder="Nombre Completo" v-model="workingPaciente.nombreCompleto" class="form-control" />
+                                <span class="field-validation-valid text-danger" asp-validation-for="NombreCompleto"></span>
+                            </div>
+                            <div class="form-group form-check">
+                                <input asp-for="Estado" v-model="workingPaciente.estado" class="form-check-input" />
+                                <label asp-for="Estado" class="form-check-label"></label>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" v-bind:disabled="!workingPaciente.id || !workingPaciente.nombreCompleto" data-dismiss="modal" id="btnSave" v-on:click="mode === 'edit' ? updatePaciente(workingPaciente.id, workingPaciente) : addPaciente(workingPaciente);">Guardar</button>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
+<script>
+    function handleErrors (response) {
+        console.log({response})
+        if(response.ok) {
+            if (response.status !== 204)
+                return response.json()
+        } else {
+            throw new Error('Ocurrio un error');
+        }
+    }
+    const apiPaths = {
+        baseUrl: "https://localhost:5001/api",
+        clientes:  {
+            create: { path: "/clientes", method: "POST" },
+            all: { path: "/clientes", method: "GET" },
+            cliente: { path: "/clientes", method: "GET" },
+            update: { path: "/clientes", method: "PUT" },
+            delete: { path: "/clientes", method: "DELETE" }
+        }
+    };
+    let app = new Vue({
+        el: '#app',
+        data: {
+            title: `@ViewData["Title"]`,
+            clientes: [],
+            mode: 'edit',
+            workingPaciente: {}
+        },
+        mounted() {
+            this.getPacientes()
+        },
+        methods: {
+            getPacientes: function () {
+                const self = this;
+
+                try {
+                    fetch(`${apiPaths.baseUrl}${apiPaths.clientes.all.path}`, {
+                    method: apiPaths.clientes.all.method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                    })
+                    .then(handleErrors)
+                    .then(data => {
+                            if(data)
+                                self.clientes = data
+                        })
+                } catch (error) {
+                    if (error && error.response && error.response.code === 500) {
+                        alert(errror.response.detail)
+                    } else {
+                        alert('Ocurrio un error al obtener los pacientes.')
+                    }
+                }
+
+            },
+            findPaciente: function (id) {
+                const self = this
+                try {
+                    fetch(`${apiPaths.baseUrl}${apiPaths.clientes.cliente.path}/${id}`, {
+                    method: apiPaths.clientes.cliente.method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                    })
+                    .then(handleErrors)
+                    .then(data => {
+                        console.log
+                            if(data)
+                                self.workingPaciente = data
+                        })
+                } catch (error) {
+                    if (error && error.response && error.response.code === 500) {
+                        alert(errror.response.detail)
+                    } else {
+                        alert('Ocurrio un error al obtener el paciente.')
+                    }
+                }
+            },
+            addPaciente: function (payload) {
+                const self = this
+                try {
+                    fetch(`${apiPaths.baseUrl}${apiPaths.clientes.create.path}`, {
+                    method: apiPaths.clientes.create.method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                    })
+                     .then(handleErrors)
+                    .then(data => {
+                            if(data)
+                                self.clientes.push(data)
+                        })
+                } catch (error) {
+                    if (error && error.response && error.response.code === 500) {
+                        alert(errror.response.detail)
+                    } else {
+                        alert('Ocurrio un error al crear el paciente.')
+                    }
+                } finally {
+                    document.getElementById('myModal').modal({ show: false })
+                }
+            },
+            updatePaciente: function(id, payload) {
+                try {
+                  fetch(`${apiPaths.baseUrl}${apiPaths.clientes.update.path}/${id}`, {
+                    method: apiPaths.clientes.update.method,
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                  })
+                    .then(handleErrors)
+                    .then(resp => {
+                      const index = this.clientes.findIndex(c => c.id === id)
+                      this.clientes.splice(index, 1, payload)
+                    })
+                } catch (error) {
+                  if (error && error.response && error.response.code === 500) {
+                    alert(errror.response.detail)
+                  } else {
+                    alert('Ocurrio un error al eliminar el paciente.')
+                  }
+                }
+            },
+            deletePaciente: function(id) {
+                let resp = confirm(`Realmente desea Elminar el paciente ${id}?`)
+
+                if(resp) {
+                    try {
+                    fetch(`${apiPaths.baseUrl}${apiPaths.clientes.delete.path}/${id}`, {
+                    method: apiPaths.clientes.delete.method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                    })
+                    .then(handleErrors)
+                    .then(resp => {
+                                 const index = this.clientes.findIndex(c => c.id === id)
+                              this.clientes.splice(index, 1)
+                            })
+                    } catch (error) {
+                        if (error && error.response && error.response.code === 500) {
+                            alert(errror.response.detail)
+                        } else {
+                            alert('Ocurrio un error al eliminar el paciente.')
+                        }
+                    }
+                }
+            }
+        }
+    })
+</script>
