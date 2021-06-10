@@ -1,4 +1,5 @@
 ﻿using app.api.Core;
+using app.api.Infrastructure.Data.Config;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
@@ -11,6 +12,14 @@ namespace app.api.Infrastructure.Data
 
         public AppDbContext([NotNull] DbContextOptions options) : base(options)
         {
+            
+        }
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.ApplyConfiguration(new ClienteConfiguration());
+            modelBuilder.ApplyConfiguration(new ProductoConfiguration());
+            modelBuilder.ApplyConfiguration(new FacturaConfiguration());
+            modelBuilder.ApplyConfiguration(new DetalleFacturaConfiguration());
         }
 
         public DbSet<Cliente> Clientes { get; set; }

@@ -10,7 +10,7 @@ using app.api.Infrastructure.Data;
 namespace app.api.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20210609233544_Initial")]
+    [Migration("20210610071705_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,17 +24,21 @@ namespace app.api.Infrastructure.Data.Migrations
             modelBuilder.Entity("app.api.Core.Cliente", b =>
                 {
                     b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("nvarchar(16)")
+                        .HasMaxLength(16);
 
                     b.Property<bool>("Estado")
                         .HasColumnType("bit");
 
                     b.Property<string>("NombreCompleto")
-                        .HasColumnType("nvarchar(max)");
+                        .IsRequired()
+                        .HasColumnType("nvarchar(128)")
+                        .HasMaxLength(128);
 
                     b.HasKey("Id");
 
-                    b.ToTable("Clientes");
+                    b.ToTable("Clientes","App");
                 });
 
             modelBuilder.Entity("app.api.Core.DetalleFactura", b =>
@@ -68,7 +72,7 @@ namespace app.api.Infrastructure.Data.Migrations
 
                     b.HasIndex("IdProducto");
 
-                    b.ToTable("DetalleFactura");
+                    b.ToTable("DetalleFactura","App");
                 });
 
             modelBuilder.Entity("app.api.Core.Factura", b =>
@@ -82,14 +86,16 @@ namespace app.api.Infrastructure.Data.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("IdentificadorCliente")
-                        .HasColumnType("nvarchar(max)");
+                        .IsRequired()
+                        .HasColumnType("nvarchar(16)")
+                        .HasMaxLength(16);
 
                     b.Property<double>("Total")
                         .HasColumnType("float");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Facturas");
+                    b.ToTable("Facturas","App");
                 });
 
             modelBuilder.Entity("app.api.Core.Producto", b =>
@@ -100,11 +106,13 @@ namespace app.api.Infrastructure.Data.Migrations
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<string>("Descripcion")
-                        .HasColumnType("nvarchar(max)");
+                        .IsRequired()
+                        .HasColumnType("nvarchar(128)")
+                        .HasMaxLength(128);
 
                     b.HasKey("Id");
 
-                    b.ToTable("Productos");
+                    b.ToTable("Productos","App");
                 });
 
             modelBuilder.Entity("app.api.Core.DetalleFactura", b =>

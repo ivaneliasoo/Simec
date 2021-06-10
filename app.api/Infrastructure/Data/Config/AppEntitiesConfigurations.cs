@@ -11,8 +11,8 @@ namespace app.api.Infrastructure.Data.Config
             builder.ToTable("Clientes", AppDbContext.DEFAULT_SCHEMA);
             builder.Ignore(p => p.DomainEvents);
             builder.HasKey(p => p.Id);
-            builder.Property(p => p.Id).ValueGeneratedOnAdd();
-            builder.Property(p => p.NombreCompleto).IsRequired();
+            builder.Property(p => p.Id).ValueGeneratedOnAdd().HasMaxLength(16);
+            builder.Property(p => p.NombreCompleto).IsRequired().HasMaxLength(128);
             builder.Property(p => p.Estado).IsRequired();
         }
     }
@@ -25,7 +25,7 @@ namespace app.api.Infrastructure.Data.Config
             builder.Ignore(p => p.DomainEvents);
             builder.HasKey(p => p.Id);
             builder.Property(p => p.Id).ValueGeneratedOnAdd();
-            builder.Property(p => p.Descripcion).IsRequired();
+            builder.Property(p => p.Descripcion).IsRequired().HasMaxLength(128);
         }
     }
 
@@ -37,7 +37,7 @@ namespace app.api.Infrastructure.Data.Config
             builder.Ignore(p => p.DomainEvents);
             builder.HasKey(p => p.Id);
             builder.Property(p => p.Id).ValueGeneratedOnAdd();
-            builder.Property(p => p.IdentificadorCliente).IsRequired();
+            builder.Property(p => p.IdentificadorCliente).IsRequired().HasMaxLength(16);
             builder.Property(p => p.Fecha).IsRequired();
             builder.Property(p => p.Total)
                 .UsePropertyAccessMode(PropertyAccessMode.Property);
